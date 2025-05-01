@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
     // The commandId parameter must match the command field in package.json
     const disposable = vscode.commands.registerCommand('ugrandjo.hello', () => {
         // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World from ugrandjo!');
+        vscode.window.showInformationMessage('Hello Bomb productions 💣 ugrandjo!');
     });
 
     context.subscriptions.push(disposable);
