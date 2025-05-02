@@ -1,7 +1,7 @@
 {
   "name": "ugrandjo",
   "displayName": "ugrandjo",
-  "description": "A simple VS Code extension",
+  "description": "VS Code extension with Hypedawg",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.70.0"
@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:ugrandjo.hello"
+    "onView:hypedawg.hypedawgView"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,8 +18,39 @@
       {
         "command": "ugrandjo.hello",
         "title": "Hello World"
+      },
+      {
+        "command": "ugrandjo.hypedawg",
+        "title": "Hype me!"
+      },
+      {
+        "command": "ugrandjo.changeBreed",
+        "title": "Change Hypedawg Breed"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "hypedawg.hypedawgView",
+          "name": "Hypedawg"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "ugrandjo.hypedawg",
+          "when": "view == hypedawg.hypedawgView",
+          "group": "navigation"
+        },
+        {
+          "command": "ugrandjo.changeBreed",
+          "when": "view == hypedawg.hypedawgView",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

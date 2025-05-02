@@ -1,163 +1,212 @@
 // The module 'vscode' contains the VS Code extensibility API
 import * as vscode from 'vscode';
 
+let currentBreed = "golden";
+
+// Function to generate a nonce
+function getNonce() {
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 32; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+// Mock function for getting hype messages, replace with actual implementation
+async function getHype(breed: string, language: string, text: string): Promise<{text: string, animation: string}> {
+  // Mock implementation, replace with actual logic
+  return {
+    text: `Your ${breed} is hyped about your ${language} code!`,
+    animation: "happy"
+  };
+}
+
+// HypedawgViewProvider implementation
+class HypedawgViewProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = "hypedawg.hypedawgView";
+  
+  private _view?: vscode.WebviewView;
+  
+  constructor(private readonly _extensionUri: vscode.Uri) {}
+  
+  public resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken
+  ) {
+    this._view = webviewView;
+  
+    webviewView.webview.options = {
+      // Allow scripts in the webview
+      enableScripts: true,
+  
+      localResourceRoots: [this._extensionUri],
+    };
+  
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+  
+    webviewView.webview.onDidReceiveMessage((data) => {
+      switch (data.type) {
+        case "colorSelected": {
+          vscode.window.activeTextEditor?.insertSnippet(
+            new vscode.SnippetString(`#${data.value}`)
+          );
+          break;
+        }
+      }
+    });
+  }
+  
+  public async hype() {
+    if (this._view) {
+      this._view.show?.(true);
+      this._view.webview.postMessage({ animation: "read" });
+      
+      if (vscode.window.activeTextEditor) {
+        const { text, animation } = await getHype(
+          currentBreed,
+          vscode.window.activeTextEditor.document.languageId,
+          vscode.window.activeTextEditor.document.getText()
+        );
+        vscode.window.showInformationMessage(text);
+        this._view.webview.postMessage({ animation });
+      } else {
+        vscode.window.showInformationMessage("No active editor found!");
+        this._view.webview.postMessage({ animation: "idle" });
+      }
+    }
+  }
+  
+  public async changeBreed() {
+    if (this._view) {
+      const input = await vscode.window.showQuickPick([
+        "wolf",
+        "pomeranian",
+        "golden",
+        "shiba",
+      ]);
+      if (input) {
+        currentBreed = input;
+        this._view.webview.postMessage({ breed: input, animation: "idle" });
+      }
+    }
+  }
+  
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "main.js")
+    );
+  
+    const styleResetUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
+    );
+    const styleVSCodeUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
+    );
+    const styleMainUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "main.css")
+    );
+    const spriteUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "sprite.css")
+    );
+    const goldenUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "golden.png")
+    );
+    const wolfUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "wolf.png")
+    );
+    const shibaUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "shiba.png")
+    );
+    const pomeranianUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "pomeranian.png")
+    );
+  
+    // Use a nonce to only allow a specific script to be run.
+    const nonce = getNonce();
+  
+    return `<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+
+                <!--
+                  Use a content security policy to only allow loading styles from our extension directory,
+                  and only allow scripts that have a specific nonce.
+                  (See the 'webview-sample' extension sample for img-src content security policy examples)
+                -->
+                <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src 'nonce-${nonce}';">
+
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+                <link href="${styleResetUri}" rel="stylesheet">
+                <link href="${styleVSCodeUri}" rel="stylesheet">
+                <link href="${styleMainUri}" rel="stylesheet">
+                <link href="${spriteUri}" rel="stylesheet">
+
+        <style>
+          .golden {
+            background-image: url(${goldenUri});
+          }
+          .shiba {
+            background-image: url(${shibaUri});
+          }
+          .wolf {
+            background-image: url(${wolfUri});
+          }
+          .pomeranian {
+            background-image: url(${pomeranianUri});
+          }
+        </style>
+
+                <title>Hypedawg</title>
+            </head>
+            <body>
+                <div id="hypedawg" class="idle golden"></div>
+                <script nonce="${nonce}" src="${scriptUri}"></script>
+            </body>
+            </html>`;
+  }
+}
+
 // This method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
-    // Use the console to output diagnostic information
-    console.log('Congratulations, your extension "ugrandjo" is now active!');
+  // Use the console to output diagnostic information
+  console.log('Congratulations, your extension "ugrandjo" is now active!');
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with registerCommand
-    // The commandId parameter must match the command field in package.json
-    const disposable = vscode.commands.registerCommand('ugrandjo.hello', () => {
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello Bomb productions 💣 ugrandjo!');
-    });
+  // Register the hello command
+  const helloDisposable = vscode.commands.registerCommand('ugrandjo.hello', () => {
+    // Display a message box to the user
+    vscode.window.showInformationMessage('Hello Bomb productions 💣 ugrandjo!');
+  });
 
-    context.subscriptions.push(disposable);
+  // Register Hypedawg view provider
+  const hypedawgProvider = new HypedawgViewProvider(context.extensionUri);
+  
+  // Register the view provider
+  const hypedawgView = vscode.window.registerWebviewViewProvider(
+    HypedawgViewProvider.viewType,
+    hypedawgProvider
+  );
+
+  // Register the hypedawg commands
+  const hypedawgCommand = vscode.commands.registerCommand('ugrandjo.hypedawg', () => {
+    hypedawgProvider.hype();
+  });
+
+  const changeBreedCommand = vscode.commands.registerCommand('ugrandjo.changeBreed', () => {
+    hypedawgProvider.changeBreed();
+  });
+
+  // Add all disposables to context.subscriptions
+  context.subscriptions.push(
+    helloDisposable,
+    hypedawgView,
+    hypedawgCommand,
+    changeBreedCommand
+  );
 }
-// workingin to ge this
-class HypedawgViewProvider implements vscode.WebviewViewProvider {
-	public static readonly viewType = "hypedawg.hypedawgView";
-  
-	private _view?: vscode.WebviewView;
-  
-	constructor(private readonly _extensionUri: vscode.Uri) {}
-  
-	public resolveWebviewView(
-	  webviewView: vscode.WebviewView,
-	  context: vscode.WebviewViewResolveContext,
-	  _token: vscode.CancellationToken
-	) {
-	  this._view = webviewView;
-  
-	  webviewView.webview.options = {
-		// Allow scripts in the webview
-		enableScripts: true,
-  
-		localResourceRoots: [this._extensionUri],
-	  };
-  
-	  webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-  
-	  webviewView.webview.onDidReceiveMessage((data) => {
-		switch (data.type) {
-		  case "colorSelected": {
-			vscode.window.activeTextEditor?.insertSnippet(
-			  new vscode.SnippetString(`#${data.value}`)
-			);
-			break;
-		  }
-		}
-	  });
-	}
-  
-	public async hype() {
-	  if (this._view) {
-		this._view.show?.(true);
-		this._view.webview.postMessage({ animation: "read" });
-		const { text, animation } = await getHype(
-		  currentBreed,
-		  vscode.window.activeTextEditor.document.languageId,
-		  vscode.window.activeTextEditor.document.getText()
-		);
-		vscode.window.showInformationMessage(text);
-		this._view.webview.postMessage({ animation });
-	  }
-	}
-  
-	public async changeBreed() {
-	  if (this._view) {
-		const input = await vscode.window.showQuickPick([
-		  "wolf",
-		  "pomeranian",
-		  "golden",
-		  "shiba",
-		]);
-		currentBreed = input;
-		this._view.webview.postMessage({ breed: input, animation: "idle" });
-	  }
-	}
-  
-	private _getHtmlForWebview(webview: vscode.Webview) {
-	  const scriptUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "main.js")
-	  );
-  
-	  const styleResetUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
-	  );
-	  const styleVSCodeUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
-	  );
-	  const styleMainUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "main.css")
-	  );
-	  const spriteUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "sprite.css")
-	  );
-	  const goldenUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "golden.png")
-	  );
-	  const wolfUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "wolf.png")
-	  );
-	  const shibaUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "shiba.png")
-	  );
-	  const pomeranianUri = webview.asWebviewUri(
-		vscode.Uri.joinPath(this._extensionUri, "media", "pomeranian.png")
-	  );
-  
-	  // Use a nonce to only allow a specific script to be run.
-	  const nonce = getNonce();
-  
-	  return `<!DOCTYPE html>
-			  <html lang="en">
-			  <head>
-				  <meta charset="UTF-8">
-  
-				  <!--
-					  Use a content security policy to only allow loading styles from our extension directory,
-					  and only allow scripts that have a specific nonce.
-					  (See the 'webview-sample' extension sample for img-src content security policy examples)
-				  -->
-				  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src 'nonce-${nonce}';">
-  
-				  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-				  <link href="${styleResetUri}" rel="stylesheet">
-				  <link href="${styleVSCodeUri}" rel="stylesheet">
-				  <link href="${styleMainUri}" rel="stylesheet">
-				  <link href="${spriteUri}" rel="stylesheet">
-  
-		  <style>
-			.golden {
-			  background-image: url(${goldenUri});
-			}
-			.shiba {
-			  background-image: url(${shibaUri});
-			}
-			.wolf {
-			  background-image: url(${wolfUri});
-			}
-			.pomeranian {
-			  background-image: url(${pomeranianUri});
-			}
-		  </style>
-  
-				  <title>Hypedawg</title>
-			  </head>
-			  <body>
-				  <div id="hypedawg" class="idle golden"></div>
-				  <script nonce="${nonce}" src="${scriptUri}"></script>
-			  </body>
-			  </html>`;
-	}
-  }
-
-
-
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
