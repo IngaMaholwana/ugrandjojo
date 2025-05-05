@@ -1,5 +1,6 @@
 (function () {
     window.addEventListener("message", (event) => {
+      console.log("Message received:" , event.data);
       const message = event.data; // The json data that the extension sent
   
       change(message.animation, message.breed);

@@ -4,30 +4,18 @@
   "description": "VS Code extension with Hypedawg",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.70.0"
+    "vscode": "^1.74.0"
   },
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onView:hypedawg.hypedawgView"
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "ugrandjo.hello",
-        "title": "Hello World"
-      },
-      {
-        "command": "ugrandjo.hypedawg",
-        "title": "Hype me!"
-      },
-      {
-        "command": "ugrandjo.changeBreed",
-        "title": "Change Hypedawg Breed"
-      }
-    ],
     "views": {
       "explorer": [
         {
@@ -37,33 +25,33 @@
         }
       ]
     },
-    "menus": {
-      "view/title": [
-        {
-          "command": "ugrandjo.hypedawg",
-          "when": "view == hypedawg.hypedawgView",
-          "group": "navigation"
-        },
-        {
-          "command": "ugrandjo.changeBreed",
-          "when": "view == hypedawg.hypedawgView",
-          "group": "navigation"
-        }
-      ]
-    }
+    "commands": [
+      {
+        "command": "hypedawg.hype",
+        "category": "Hypedawg",
+        "title": "Hype"
+      },
+      {
+        "command": "hypedawg.breed",
+        "category": "Hypedawg",
+        "title": "Change Breed"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "lint": "eslint \"src/**/*.ts\"",
+    "watch": "tsc -w -p ./"
   },
   "devDependencies": {
-    "@types/vscode": "^1.70.0",
-    "@types/node": "16.x",
-    "typescript": "^4.8.4",
-    "eslint": "^8.26.0"
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^7.14.0",
+    "@typescript-eslint/parser": "^7.14.0",
+    "eslint": "^8.32.0",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@azure/openai": "^1.0.0"
   }
 }

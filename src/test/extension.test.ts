@@ -1,15 +1,34 @@
-import * as assert from 'assert';
+const { l } = require('./path/to/extensionHostProcess');
+const assert = require('assert');
 
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
-import * as vscode from 'vscode';
-// import * as myExtension from '../../extension';
+// Assuming the `l` function is exported from a module
 
-suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+describe('Function l', () => {
+	it('should handle valid inputs correctly', () => {
+		const input = { list: true, install: ['extension1'], uninstall: ['extension2'], force: true };
+		const result = l(input);
+		assert.deepStrictEqual(result, {
+			list: true,
+			install: ['extension1'],
+			uninstall: ['extension2'],
+			force: true,
+		});
+	});
 
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
+	it('should handle empty inputs', () => {
+		const input = {};
+		const result = l(input);
+		assert.deepStrictEqual(result, { list: undefined, install: undefined, uninstall: undefined, force: undefined });
+	});
+
+	it('should handle invalid inputs gracefully', () => {
+		const input = null;
+		assert.throws(() => l(input), /TypeError/);
+	});
+
+	it('should handle missing properties', () => {
+		const input = { list: true };
+		const result = l(input);
+		assert.deepStrictEqual(result, { list: true, install: undefined, uninstall: undefined, force: undefined });
 	});
 });
