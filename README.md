@@ -2,71 +2,61 @@
 
 Written for the AIforSocial good hackathon by MicrosoftSA in collaboration with Geekulcha ans 22OnSloan
 A vscode quickstart extension first ever attempt at creating an extension Copilot endpoint. typescript 
+is a delightful, animated VS Code companion designed to hype you up while you code. This extension brings a pixelated dog into your editor's side panel who animates, reacts to your code, and delivers motivational feedback based on what you’re working on.
+
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- 🐾 **Pixel Dog Companion**: A side-panel animated dog that reacts to your code and commands.
+- 🧠 **Context-Aware Motivation**: Analyzes your code to provide animated, breed-specific motivation.
+- 🔄 **Breed Selector**: Choose between Shiba, Golden Retriever, Pomeranian.
+- 🎨 **Sprite-Based Animation**: Idle, bark, read, and other actions triggered via CSS sprites.
+- 🎮 **WebView Interface**: Secure, styled panel powered by WebView and VS Code APIs.
 
-For example if there is an image subfolder under your extension project workspace:
 
-\!\[feature X\]\(images/feature-x.png\)
+## 🚀 Getting Started
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+1. Open VS Code.
+2. Clone this repo or install via the extensions `ugrandlo`.
+3. Press `F5` to run the extension in a new Extension Development Host.
+4. Open the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) and try:
+   - `Hypedawg: Hype`
+   - `Hypedawg: Breed`
 
 ---
 
-## Following extension guidelines
+### 📂 File Structure
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+hypedawg/
+├── media/
+│ ├── main.js # WebView script
+│ ├── main.css # Styling with sprite logic
+│ ├── sprite.css # Animation logic
+│ └── *.png # Sprite images (shiba, retriever, etc.)
+│
+├── src/
+│ ├── extension.ts # Entry point and commands
+│ ├── getHype.ts # Code analysis + motivation logic
+│ └── getPrompt.ts # Prompt builder for feedback
+│
+├── package.json # Extension config
+└── README.md # This file
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+## HOW IT WORKS
+Main entry point that:
+- Registers the WebView (`HypedawgViewProvider`)
+- Registers two commands:
+  - `hypedawg.hype`: Analyzes code + shows animation
+  - `hypedawg.breed`: Lets you choose a breed
 
-## Working with Markdown
+### 📬 Messaging & Animation
+In `main.js`, the WebView listens for messages like:
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+```js
+{
+  animation: "bark",
+  breed: "shiba",
+  hype: "Nice async function, you're crushing it!"
+}
 
 **Enjoy!**
